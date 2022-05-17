@@ -1,5 +1,7 @@
 from random import sample, choice, randint, shuffle
 from timeit import default_timer
+from copy import deepcopy
+from sys import setrecursionlimit
 
 
 def u_hamilton(n, x):
@@ -41,7 +43,6 @@ def u_hamilton(n, x):
 
 def u_nie_hamilton(n, nasycenie):
     graf = u_hamilton(n, nasycenie)
-    nasycenie = nasycenie*((n*(n-1))/2)
     odizolowany = randint(0, n-1)
     for i in range(n):
         graf[i][odizolowany] = 0
@@ -61,11 +62,27 @@ def lista_nastepnikow(sasiedztwo, n):
 def sprawdzanie_hamilton(graf, n):
     seq = [0]
     if hamilton_util(graf, n, seq):
-        print(*seq)
+        # print(*seq)
         return seq
     else:
-        print("Cykl hamiltona nie istnieje.")
+        #print("Cykl hamiltona nie istnieje.")
         return False
+
+
+def hamilton_util(graf, n, seq):
+    if len(seq) == n:
+        if graf[seq[-1]][0] == 1:
+            return True
+        else:
+            return False
+    for v in range(1, n):
+        if graf[seq[-1]][v] == 1 and v not in seq:
+            seq.append(v)
+            if hamilton_util(graf, n, seq) == True:
+                return True
+            print(seq)
+            seq.pop(len(seq)-1)
+    return False
 
 
 def hamilton_util(graf, n, seq):
@@ -187,39 +204,28 @@ def wypisz_euler(temp_graf, n):
 def cykl_eulera(graf, n, v):
     for next in graf[v]:
         if is_valid(graf, v, next, n):
-            print(v, next, sep=" -> "),
+            #print(v, next, sep=" -> "),
             usun_krawedz(graf, next, v)
             cykl_eulera(graf, n, next)
 
 
 def main():
-    while True:
-        try:
-            n = int(input("Podaj ilosc krawedzi w grafie: "))
-            nasycenie = float(input("Podaj nasycenie grafu: "))
-            break
-        except ValueError:
-            print("Podaj wartosc typu int, a nastepnie typu float")
+    nasycenie = 50
+    times = [18, 20]
+    print("start")
+    for n in times:
+        print(f"n = {n}: ", end=" ")
+        start = default_timer()
+        graf_nie_hamilton = u_nie_hamilton(n, nasycenie)
+        #print(*graf_nie_hamilton, sep="\n")
+        end = default_timer()
+        #print(end-start, end=" -> ")
+        #graf_nie_hamilton = u_nie_hamilton(n, nasycenie)
 
-    graf_hamilton = u_hamilton(n, nasycenie)
-    graf_nie_hamilton = u_nie_hamilton(n, nasycenie)
-    print(*graf_hamilton, sep="\n")
-
-    while (inp := input("\n1. Znajdz cykl Eulera\n2. Znajdz cykl Hamiltona\n")) != ("q" or "0"):
-        if inp == "1":
-            if (g := input("    1. Graf hamiltonowski\n    2. Graf nie-hamiltonowski\n")):
-                if g == "1":
-                    wypisz_euler(graf_hamilton, n)
-                if g == "2":
-                    wypisz_euler(graf_nie_hamilton, n)
-        if inp == "2":
-            if (g := input("    1. Graf hamiltonowski\n    2. Graf nie-hamiltonowski\n")):
-                if g == "1":
-                    sprawdzanie_hamilton(graf_hamilton, n)
-                if g == "2":
-                    sprawdzanie_hamilton(graf_nie_hamilton, n)
-
-        input()
+        start = default_timer()
+        sprawdzanie_hamilton(graf_nie_hamilton, n)
+        end = default_timer()
+        print(end-start)
 
 
 if __name__ == '__main__':
